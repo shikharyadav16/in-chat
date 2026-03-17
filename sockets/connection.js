@@ -11,6 +11,7 @@ const socketHandler = (io) => {
         socket.on('disconnect', () => {
             console.log('A user disconnected');
         });
+        
     });
 
 }

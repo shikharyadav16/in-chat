@@ -1,4 +1,4 @@
-import { UserValidationError } from '../Error.js';
+const { UserValidationError } = require('../Error.js');
 
 class UserValidator {
     static validateUserData(payload) {
@@ -41,5 +41,4 @@ class UserValidator {
         return true;
     }
 }
-
-export default UserValidator;
+module.exports =  UserValidator;

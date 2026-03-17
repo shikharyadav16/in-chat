@@ -1,4 +1,4 @@
-import { ReactionValidationError } from "../Error";
+const { ReactionValidationError } = require("../Error");
 
 class ReactionValidator {
     static validateReaction(reaction) {
@@ -9,4 +9,4 @@ class ReactionValidator {
     }
 }
 
-export default ReactionValidator;
+module.exports = ReactionValidator;

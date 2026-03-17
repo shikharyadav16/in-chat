@@ -1,4 +1,4 @@
-import { MessageValidationError } from "../Error";
+const { MessageValidationError } = require("../Error");
 
 class MessageValidator {
     static validateMessage(message) {
@@ -18,4 +18,4 @@ class MessageValidator {
     }
 }
 
-export default MessageValidator;
+module.exports = MessageValidator;

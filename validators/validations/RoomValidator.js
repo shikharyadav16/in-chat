@@ -1,4 +1,4 @@
-import { RoomValidationError } from "../Error";
+const { RoomValidationError } = require("../Error");
 
 class RoomValidator {
     static validateRoomData(room) {
@@ -28,4 +28,4 @@ class RoomValidator {
     }
 }
 
-export default RoomValidator;
+module.exports = RoomValidator;

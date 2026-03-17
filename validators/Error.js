@@ -12,18 +12,18 @@ class ReactionValidationError extends Error {
     }
 }
 
-class RoomValidationError extends ValidationError {
+class RoomValidationError extends Error {
     constructor(message) {
         super(message);
         this.name = "RoomValidationError";
     }
 }
 
-class MessageValidationError extends ValidationError {
+class MessageValidationError extends Error {
     constructor(message) {
         super(message);
         this.name = "MessageValidationError";
     }
 }
 
-export { UserValidationError, ReactionValidationError, RoomValidationError, MessageValidationError };
+module.exports =  { UserValidationError, ReactionValidationError, RoomValidationError, MessageValidationError };

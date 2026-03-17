@@ -56,6 +56,11 @@ const userSchema = new mongoose.Schema({
         default: Date.now
     },
 
+    lastSeenLogs: [ {
+        type: Date,
+        default: Date.now
+    }],
+
     publicKey: {
         type: String,
         required: true

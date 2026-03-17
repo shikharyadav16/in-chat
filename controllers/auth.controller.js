@@ -6,6 +6,7 @@ const sendMail = require("../services/nodemailer.service.js");
 const UserValidator = require("../validators/validations/UserValidator.js");
 const jsonwebtoken = require("jsonwebtoken");
 const generateKey = require("../services/keyGenerate.service.js");
+const idGenerate = require("../services/idGenerate.service.js");
 
 require('dotenv').config();
 
@@ -14,6 +15,7 @@ const handlePostSignup = asyncHandler(async (req, res) => {
     const { username, email, password } = req.body;
     
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    console.log("Generated OTP:", otp);
     const html = `<h2>Your OTP : ${otp}</h2>`;
     const text = `Your OTP for In-Chat signup is: ${otp}`;
 
@@ -51,27 +53,29 @@ const verifySignupOTP = asyncHandler(async (req, res) => {
     }
     const { username, password } = otpRecord;
 
+    const { publicKey, privateKey } = generateKey();
+    const userId = idGenerate("user");
+
     const user = new User({
         username,
         email,
         password: await argon.hash(password),
-        publicKey
+        publicKey,
+        userId
     });
 
     await user.save();
-    await otpRecord.remove();
+    await otpRecord.deleteOne();
 
-    return res.status(200).json({ message: "User registered successfully" });
+    return res.status(200).json({ message: "User registered successfully", privateKey });
 });
 
 const handlePostLogin = asyncHandler(async (req, res) => {
 
     const { email, password } = req.body;
-
     UserValidator.validateLogin({ email, password });
 
     const user = await User.findOne({ email });
-
     if (!user) {
         return res.status(400).json({ message: "Invalid email or password" });
     }

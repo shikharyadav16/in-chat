@@ -4,7 +4,8 @@ const OTP = require("../models/OTP.js");
 const argon = require("argon2");
 const sendMail = require("../services/nodemailer.service.js");
 const UserValidator = require("../validators/validations/UserValidator.js");
-const jsonwebtoken = require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
+const sessionToken = require("../services/sessionToken.service.js");
 const generateKey = require("../services/keyGenerate.service.js");
 const idGenerate = require("../services/idGenerate.service.js");
 
@@ -45,8 +46,9 @@ const handlePostSignup = asyncHandler(async (req, res) => {
 
 const verifySignupOTP = asyncHandler(async (req, res) => {
 
-    const { email, otp } = req.body;
-    const otpRecord = await OTP.findOne({ email, otp });
+    let { email, otp } = req.body;
+
+    const otpRecord = await OTP.findOne({ email, otp: otp.toString().trim() });
 
     if (!otpRecord) {
         return res.status(400).json({ message: "Invalid OTP" });
@@ -63,6 +65,9 @@ const verifySignupOTP = asyncHandler(async (req, res) => {
         publicKey,
         userId
     });
+
+    const token = jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    sessionToken.set(token, userId);
 
     await user.save();
     await otpRecord.deleteOne();
@@ -86,7 +91,10 @@ const handlePostLogin = asyncHandler(async (req, res) => {
         return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    return res.status(200).json({ message: "Login successful", userId: user._id });
+    const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    sessionToken.set(token, user.userId);
+
+    return res.status(200).json({ message: "Login successful", userId: user.userId, token });
 
 });
 

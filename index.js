@@ -19,6 +19,9 @@ const { isAuthenticated } = require('./middlewares/auth.middleware');
 const { isSocketAuthenticated } = require('./middlewares/socketAuth.middleware');
 const path = require('path');
 
+app.set("view engine", "ejs");
+app.set("views", path.resolve("./views"))
+
 app.use(cookieParser());
 app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use(express.json());

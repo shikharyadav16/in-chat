@@ -7,11 +7,11 @@ const socketHandler = (io) => {
 
         socket.broadcast.emit("user-joins", socket.user.username);
         OnlineUser.add(socket.user.userId, socket.id)
-
+        
         socketMessageHandler(io, socket);
-
+        
         socket.on('disconnect', () => {
-            // console.log('A user disconnected');
+            OnlineUser.remove(socket.user.userId, socket.id)
         });
         
     });

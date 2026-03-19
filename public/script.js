@@ -1,6 +1,6 @@
 const input = document.getElementById('message');
 
-document.addEventListener('keydown', () => {
+document.addEventListener('keydown', (e) => {
     if (e.key === "Enter") {
         console.log(input.value)
         socket.emit("message", input.value.trim())

@@ -1,5 +1,6 @@
+const onlineUsers = new Map();
+
 function OnlineUser() {
-    const onlineUsers = new Map();
 
     function get(userId) {
         return onlineUsers.get(userId) || null;

@@ -17,7 +17,8 @@ const isSocketAuthenticated = async (socket, next) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         socket.user = decoded;
         const user = await User.findOne({ userId: decoded.userId })
-        socket.user = { ...{ email: user.email, username: user.username } }
+        // console.log(user)
+        socket.user = { ...{ email: user.email, username: user.username, userId: user.userId } }
         next();
     } catch (err) {
         next(new Error("Unauthorized"));

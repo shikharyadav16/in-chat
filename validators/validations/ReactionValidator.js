@@ -1,11 +1,11 @@
-const { ReactionValidationError } = require("../Error");
+const response = require("../Error");
 
 class ReactionValidator {
     static validateReaction(reaction) {
         if (!reaction.messageId || typeof reaction.messageId !== 'string') {
-            throw new ReactionValidationError('Message ID is required and must be a string.');
+            return response(false, 'Message ID is required and must be a string.');
         }
-    return true;
+    return response(true);
     }
 }
 

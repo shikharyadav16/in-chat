@@ -7,7 +7,6 @@ const UserValidator = require("../validators/validations/UserValidator.js");
 const jwt = require("jsonwebtoken");
 const generateKey = require("../services/keyGenerate.service.js");
 const idGenerate = require("../services/idGenerate.service.js");
-const { isAuthenticated } = require("../middlewares/auth.middleware.js")
 
 require('dotenv').config();
 
@@ -15,11 +14,12 @@ const handlePostSignup = asyncHandler(async (req, res) => {
 
     const { username, email, password } = req.body;
     
-    UserValidator.validateUserData({ username, email, password });
+    const validationResponse = UserValidator.validateUserData({ username, email, password });
+    if (!validationResponse.status) return res.status(400).json({ success: false, message: validationResponse.message })
     
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-        return res.status(400).json({ message: "Email already in use" });
+        return res.status(400).json({success: false, message: "Email already in use" });
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -39,7 +39,7 @@ const handlePostSignup = asyncHandler(async (req, res) => {
     await otpRecord.save();
 
     await sendMail({ to: email, subject: "Your OTP", text, html });
-    return res.status(200).json({ message: "OTP sent to your email" });
+    return res.status(200).json({success: true, message: "OTP sent to your email", redirectedTo: "verify-otp" });
 
 });
 
@@ -51,7 +51,7 @@ const verifySignupOTP = asyncHandler(async (req, res, next) => {
     const otpRecord = await OTP.findOne({ email, otp: otp.toString().trim() });
 
     if (!otpRecord) {
-        return res.status(400).json({ message: "Invalid OTP" });
+        return res.status(400).json({success: false, message: "Invalid OTP" });
     }
     const { username, password } = otpRecord;
 
@@ -77,25 +77,28 @@ const verifySignupOTP = asyncHandler(async (req, res, next) => {
     await user.save();
     await otpRecord.deleteOne();
     
-    return res.status(200).json({ message: "User registered successfully", privateKey });
+    return res.status(200).json({success:false, message: "User registered successfully", privateKey });
 });
 
 const handlePostLogin = asyncHandler(async (req, res) => {
 
     const { email, password } = req.body;
     console.log(email, password)
-    UserValidator.validateEmail(email);
-    UserValidator.validatePassword(password);
+    const emailValidateResponse = UserValidator.validateEmail(email);
+    const passwordValidateResponse = UserValidator.validatePassword(password);
+
+    if (!emailValidateResponse.status) return res.status(400).json({success: false, message: emailValidateResponse.message});
+    if (!passwordValidateResponse.status) return res.status(400).json({success: false, message: passwordValidateResponse.message});
     
     const user = await User.findOne({ email });
     if (!user) {
-        return res.status(400).json({ message: "Invalid email or password" });
+        return res.status(400).json({success: false, message: "Invalid email or password" });
     }
     
     const isPasswordValid = await argon.verify(user.password, password);
     
     if (!isPasswordValid) {
-        return res.status(400).json({ message: "Invalid email or password" });
+        return res.status(400).json({success: false, message: "Invalid email or password" });
     }
     
     const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
@@ -106,13 +109,31 @@ const handlePostLogin = asyncHandler(async (req, res) => {
         maxAge: 24 * 60 * 60 * 1000
     })
 
-    return res.status(200).json({ message: "Login successful", redirectedTo: "/chat" });
+    return res.status(200).json({success: true, message: "Login successful", redirectedTo: "/chat" });
 
 });
+
+const checkAuth = asyncHandler(async (req, res) => {
+
+    const token = req?.cookies?.token;
+    
+    if (!token) {
+        return res.status(401).json({status:false, message: "Unauthorized" });
+    }
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (!decoded || !decoded.userId) {
+        return res.status(401).json({status: false, message: "Invalid token payload" });
+    }
+
+    return res.status(200).json({status: true, user: decoded })
+
+})
 
 module.exports = {
     handlePostSignup,
     verifySignupOTP,
-    handlePostLogin
+    handlePostLogin,
+    checkAuth
 };
 

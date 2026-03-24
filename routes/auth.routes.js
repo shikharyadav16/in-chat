@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { handlePostSignup, verifySignupOTP, handlePostLogin } = require('../controllers/auth.controller')
+const { handlePostSignup, verifySignupOTP, handlePostLogin, checkAuth } = require('../controllers/auth.controller')
 
 router
     .post("/signup", handlePostSignup)
@@ -12,6 +12,8 @@ router
         return res.render("login")
     })
     .post("/login", handlePostLogin)
+
+router.post('/me', checkAuth)
 
 // router.get("/signup", (req, res) => {
 //     res.send("signup");

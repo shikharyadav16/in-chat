@@ -8,6 +8,9 @@ router
     .post("/verify-otp", verifySignupOTP)
 
 router
+    .get('/login', (req, res) => {
+        return res.render("login")
+    })
     .post("/login", handlePostLogin)
 
 // router.get("/signup", (req, res) => {

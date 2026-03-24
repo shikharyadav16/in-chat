@@ -81,8 +81,9 @@ const verifySignupOTP = asyncHandler(async (req, res, next) => {
 });
 
 const handlePostLogin = asyncHandler(async (req, res) => {
-    
+
     const { email, password } = req.body;
+    console.log(email, password)
     UserValidator.validateEmail(email);
     UserValidator.validatePassword(password);
     
@@ -105,7 +106,7 @@ const handlePostLogin = asyncHandler(async (req, res) => {
         maxAge: 24 * 60 * 60 * 1000
     })
 
-    return res.status(200).json({ message: "Login successful", userId: user.userId, token });
+    return res.status(200).json({ message: "Login successful", redirectedTo: "/chat" });
 
 });
 

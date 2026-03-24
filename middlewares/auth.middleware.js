@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const isAuthenticated = (req, res, next) => {
 
     const token = req?.cookies?.token;
+    console.log("Authenticated:", token)
     // console.log("Logged in:", token)
 
     if (!token) {

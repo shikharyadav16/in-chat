@@ -14,6 +14,11 @@ function OnlineUser() {
         onlineUsers.get(userId).add(socketId);
     }
 
+    function has(userId) {
+        if (onlineUsers.has(userId)) return true;
+        return false;
+    }
+
     function remove(userId, socketId) {
         const userSockets = onlineUsers.get(userId);
 
@@ -30,7 +35,7 @@ function OnlineUser() {
         return onlineUsers;
     }
 
-    return { add, get, remove, getAll };
+    return { add, get, remove, getAll, has };
 }
 
 module.exports = OnlineUser;

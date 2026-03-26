@@ -13,7 +13,8 @@ router
     })
     .post("/login", handlePostLogin)
 
-router.post('/me', checkAuth)
+router
+    .get('/me', checkAuth);
 
 // router.get("/signup", (req, res) => {
 //     res.send("signup");

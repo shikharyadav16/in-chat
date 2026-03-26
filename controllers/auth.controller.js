@@ -38,7 +38,7 @@ const handlePostSignup = asyncHandler(async (req, res) => {
 
     await otpRecord.save();
 
-    await sendMail({ to: email, subject: "Your OTP", text, html });
+    // await sendMail({ to: email, subject: "Your OTP", text, html });
     return res.status(200).json({success: true, message: "OTP sent to your email", redirectedTo: "verify-otp" });
 
 });
@@ -69,8 +69,8 @@ const verifySignupOTP = asyncHandler(async (req, res, next) => {
     const token = jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
     res.cookie('token', token, {
         httpOnly: true,
-        secure: true,
-        samesite: 'strcit',
+        // secure: true,
+        samesite: 'lax',
         maxAge: 24 * 60 * 60 * 1000
     });
 
@@ -83,7 +83,6 @@ const verifySignupOTP = asyncHandler(async (req, res, next) => {
 const handlePostLogin = asyncHandler(async (req, res) => {
 
     const { email, password } = req.body;
-    console.log(email, password)
     const emailValidateResponse = UserValidator.validateEmail(email);
     const passwordValidateResponse = UserValidator.validatePassword(password);
 

@@ -1,4 +1,5 @@
 const OnlineUser = require('../services/onlineUsers.service')();
+const saveMessages = require('./handlers/message.handler');
 
 const socketMessageHandler = (io, socket) => {
 
@@ -6,7 +7,6 @@ const socketMessageHandler = (io, socket) => {
     .on('message', (data) => {
 
         if (OnlineUser.has(data.userId)) {
-            console.log("yes he is online")
             OnlineUser.get(data.userId).forEach(socketId => {
                 io.to(socketId).emit('message', { username: socket.user.username, message: data.message });
             });   
@@ -18,8 +18,9 @@ const socketMessageHandler = (io, socket) => {
             })
         }
 
-        // add message into database
-        // Code------
+        // adding  message into database
+
+        // saveMessages({ message: data.message, roomId:  })
 
     })
     

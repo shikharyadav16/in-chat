@@ -13,9 +13,10 @@ const chatSchema = new mongoose.Schema({
         required: true
     },
 
-    isGroup: {
-        type: Boolean,
-        default: false
+    type: {
+        type: String,
+        enum: ["peer", "group", "channel", "thread"],
+        default: "peer"
     },
 
     groupName: {

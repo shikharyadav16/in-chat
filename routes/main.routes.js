@@ -1,6 +1,7 @@
 const express = require('express');
-const { handleGetIndexPage } = require('../controllers/main.controller.js')
 const router = express.Router();
+
+const { handleGetIndexPage } = require('../controllers/main.controller.js')
 
 router.get("/chat", handleGetIndexPage);
 

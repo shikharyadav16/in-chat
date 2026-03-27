@@ -21,6 +21,10 @@ const handleConnectContactRoom = asyncHandler(async ({ userId, socket }) => {
     return;
 });
 
+const handleGetLastSeen = asyncHandler(async({ contactId }) => {
+    const user = await User.findOne({ userId: contactId });
+    
+})
 
 const handleLastSeen = asyncHandler(async({ userId }) => {
     const user = await User.findOne({ userId });

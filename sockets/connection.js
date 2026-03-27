@@ -1,6 +1,6 @@
 const socketMessageHandler = require('./message');
 const OnlineUser = require('../services/onlineUsers.service')();
-const { handleLastSeen, handleConnectContactRoom, handleFilterContacts } = require('./handlers/connection.handler');
+const { handleLastSeen, handleConnectContactRoom, handleGetLastSeen } = require('./handlers/connection.handler');
 
 const socketHandler = (io) => {
 
@@ -12,8 +12,13 @@ const socketHandler = (io) => {
         // // Connect with the contacts Room Id, personal Room
         handleConnectContactRoom({ userId: socket.user.userId, socket });
 
-        // // Connect the contact userId with email
-        // const contacts = handleFilterContacts({ contactsPayload, userId: socket.user.userId });
+        socket.on("online-status", ({ contactId }) => {
+            if (OnlineUser.has(contactId)) {
+                socket.emit({ status: 'online' })
+            } else {
+                handleGetLastSeen({ contactId });
+            }
+        })
 
         // socket.broadcast.emit("user-joins", socket.user.username);
         console.log("User connected:", socket.id)

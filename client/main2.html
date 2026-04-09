@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <title>BlueChat — Modern Messenger</title>
+    <!-- Google Fonts & Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f2f5;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            touch-action: pan-y pinch-zoom; /* better mobile scroll */
+        }
+
+        /* main app container */
+        .app {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* ========== LEFT PANEL (CHATS LIST) ========== */
+        .chats-panel {
+            width: 100%;
+            max-width: 380px;
+            background: #fff;
+            border-right: 1px solid rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            transition: transform 0.25s ease;
+            z-index: 2;
+        }
+
+        /* panel header (blue) */
+        .panel-header {
+            background: #1E88E5;  /* vibrant blue */
+            padding: 18px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+        }
+        .panel-header h2 {
+            font-size: 1.35rem;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+        .header-icons i {
+            font-size: 1.35rem;
+            margin-left: 20px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .header-icons i:hover { opacity: 0.8; }
+
+        /* search bar */
+        .search-bar {
+            background: #fff;
+            padding: 8px 12px;
+            border-bottom: 1px solid #e9edef;
+        }
+        .search-container {
+            background: #f0f2f5;
+            border-radius: 24px;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #54656f;
+        }
+        .search-container i { font-size: 1rem; }
+        .search-container input {
+            background: transparent;
+            border: none;
+            outline: none;
+            font-size: 0.9rem;
+            width: 100%;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* chat list scroll */
+        .chat-list {
+            flex: 1;
+            overflow-y: auto;
+            background: #fff;
+        }
+        .chat-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: background 0.15s;
+            border-bottom: 1px solid #f0f2f5;
+        }
+        .chat-item:hover { background: #f5f7fa; }
+        .chat-item.active {
+            background: #E9F0FB;
+        }
+        .avatar {
+            width: 52px;
+            height: 52px;
+            background: #1E88E5;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: white;
+            text-transform: uppercase;
+            flex-shrink: 0;
+            background-image: linear-gradient(135deg, #1E88E5, #0b5cad);
+        }
+        .chat-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .chat-name {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #111;
+            display: flex;
+            justify-content: space-between;
+        }
+        .chat-time {
+            font-size: 0.7rem;
+            color: #8696a0;
+            font-weight: 400;
+        }
+        .last-msg {
+            font-size: 0.8rem;
+            color: #64748b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
+        }
+
+        /* ========== RIGHT PANEL (CHAT DETAIL) ========== */
+        .chat-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #fefefe;
+            background-image: radial-gradient(#e9ecef 0.8px, transparent 0.8px);
+            background-size: 20px 20px;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* chat header */
+        .chat-header {
+            background: #fff;
+            padding: 12px 20px;
+            border-bottom: 1px solid #e9edef;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+        .back-btn-mobile {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.4rem;
+            cursor: pointer;
+            color: #1E88E5;
+        }
+        .chat-header .avatar.small {
+            width: 42px;
+            height: 42px;
+            font-size: 1rem;
+        }
+        .chat-header-info {
+            flex: 1;
+        }
+        .chat-header-info h3 {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        .chat-header-info p {
+            font-size: 0.7rem;
+            color: #25D366;
+        }
+
+        /* messages area */
+        .messages-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            scroll-behavior: smooth;
+        }
+        .message-row {
+            display: flex;
+            width: 100%;
+        }
+        .message-row.sent {
+            justify-content: flex-end;
+        }
+        .message-row.received {
+            justify-content: flex-start;
+        }
+        .bubble {
+            max-width: 70%;
+            padding: 8px 12px;
+            border-radius: 18px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            position: relative;
+            box-shadow: 0 1px 0.5px rgba(0,0,0,0.08);
+        }
+        .sent .bubble {
+            background: #DCF4FF;
+            border-bottom-right-radius: 4px;
+            color: #111;
+        }
+        .received .bubble {
+            background: #ffffff;
+            border-bottom-left-radius: 4px;
+            color: #111;
+            border: 1px solid #e9edef;
+        }
+        .msg-time {
+            font-size: 0.65rem;
+            color: #6c757d;
+            text-align: right;
+            margin-top: 4px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 4px;
+        }
+        .sent .msg-time i {
+            font-size: 0.6rem;
+            color: #1E88E5;
+        }
+
+        /* input area - SAFE BOTTOM (fix for navigation bar) */
+        .input-container {
+            background: #fff;
+            padding: 10px 16px;
+            border-top: 1px solid #e9edef;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+            padding-bottom: max(12px, env(safe-area-inset-bottom));
+        }
+        .input-container i {
+            font-size: 1.5rem;
+            color: #1E88E5;
+            cursor: pointer;
+        }
+        .input-container input {
+            flex: 1;
+            border: none;
+            background: #f0f2f5;
+            padding: 12px 16px;
+            border-radius: 28px;
+            font-size: 0.95rem;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+        }
+        .input-container button {
+            background: #1E88E5;
+            border: none;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .input-container button:hover {
+            background: #0a5db6;
+        }
+
+        /* empty state */
+        .empty-chat {
+            text-align: center;
+            margin-top: 40%;
+            color: #abb2b9;
+        }
+
+        /* ========== MOBILE RESPONSIVE ========== */
+        @media (max-width: 768px) {
+            .app {
+                flex-direction: row;
+                overflow: hidden;
+            }
+            /* default: show chats panel, hide chat panel */
+            .chats-panel {
+                max-width: 100%;
+                transform: translateX(0%);
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 10;
+                transition: transform 0.25s cubic-bezier(0.2,0.9,0.4,1.1);
+            }
+            .chat-panel {
+                width: 100%;
+                transform: translateX(100%);
+                position: absolute;
+                top: 0;
+                left: 0;
+                height: 100%;
+                z-index: 20;
+                background: #f5f7fb;
+                transition: transform 0.25s cubic-bezier(0.2,0.9,0.4,1.1);
+            }
+            /* when chat is active (mobile) */
+            .app.mobile-chat-open .chats-panel {
+                transform: translateX(-100%);
+            }
+            .app.mobile-chat-open .chat-panel {
+                transform: translateX(0%);
+            }
+            .back-btn-mobile {
+                display: block;
+            }
+            .panel-header h2 {
+                font-size: 1.2rem;
+            }
+            .input-container {
+                padding-bottom: max(12px, env(safe-area-inset-bottom));
+            }
+            .bubble {
+                max-width: 85%;
+            }
+        }
+
+        /* desktop always both visible */
+        @media (min-width: 769px) {
+            .chats-panel {
+                position: relative;
+                transform: none !important;
+            }
+            .chat-panel {
+                position: relative;
+                transform: none !important;
+            }
+            .back-btn-mobile {
+                display: none;
+            }
+            .app.mobile-chat-open {
+                /* no effect on desktop */
+            }
+        }
+
+        /* custom scroll */
+        .messages-area::-webkit-scrollbar, .chat-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        .messages-area::-webkit-scrollbar-track, .chat-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .messages-area::-webkit-scrollbar-thumb, .chat-list::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="app" id="app">
+    <!-- LEFT PANEL: chats list -->
+    <div class="chats-panel" id="chatsPanel">
+        <div class="panel-header">
+            <h2>BlueChat</h2>
+            <div class="header-icons">
+                <i class="fas fa-camera"></i>
+                <i class="fas fa-edit"></i>
+            </div>
+        </div>
+        <div class="search-bar">
+            <div class="search-container">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search or start new chat" id="searchInput">
+            </div>
+        </div>
+        <div class="chat-list" id="chatListContainer">
+            <!-- dynamic chats injected -->
+        </div>
+    </div>
+
+    <!-- RIGHT PANEL: active conversation -->
+    <div class="chat-panel" id="chatPanel">
+        <div class="chat-header">
+            <button class="back-btn-mobile" id="backToChatsBtn"><i class="fas fa-arrow-left"></i></button>
+            <div class="avatar small" id="chatHeaderAvatar">JD</div>
+            <div class="chat-header-info">
+                <h3 id="chatHeaderName">Select a chat</h3>
+                <p id="chatHeaderStatus">online</p>
+            </div>
+            <i class="fas fa-search" style="margin-left: auto; color:#1E88E5;"></i>
+            <i class="fas fa-ellipsis-v" style="margin-left: 16px; color:#1E88E5;"></i>
+        </div>
+        <div class="messages-area" id="messagesArea">
+            <div class="empty-chat">
+                <i class="fas fa-comments" style="font-size: 3rem; color:#ccc;"></i>
+                <p style="margin-top: 12px;">Select a conversation to start messaging</p>
+            </div>
+        </div>
+        <div class="input-container">
+            <i class="far fa-smile-wink"></i>
+            <i class="fas fa-paperclip"></i>
+            <input type="text" id="messageInput" placeholder="Type a message" autocomplete="off">
+            <button id="sendMsgBtn"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------- MOCK DATA (Blue theme clone, detailed) ----------
+    const chatsData = [
+        {
+            id: "c1",
+            name: "Alice Carter",
+            avatarInitials: "AC",
+            lastMessage: "See you tomorrow! 😊",
+            lastTimestamp: "10:42 AM",
+            online: true,
+            messages: [
+                { id: "m1", text: "Hey, how's your project going?", timestamp: "10:15 AM", direction: "received" },
+                { id: "m2", text: "Almost done! Just need to polish the UI.", timestamp: "10:18 AM", direction: "sent" },
+                { id: "m3", text: "That's awesome! Send me a demo later.", timestamp: "10:20 AM", direction: "received" },
+                { id: "m4", text: "Will do! See you tomorrow? 😊", timestamp: "10:42 AM", direction: "sent" },
+            ]
+        },
+        {
+            id: "c2",
+            name: "James Wilson",
+            avatarInitials: "JW",
+            lastMessage: "Let's sync at 4pm",
+            lastTimestamp: "Yesterday",
+            online: false,
+            messages: [
+                { id: "m5", text: "Did you review the design files?", timestamp: "Yesterday, 2:30 PM", direction: "received" },
+                { id: "m6", text: "Yes, looks great. Only minor tweaks.", timestamp: "Yesterday, 3:15 PM", direction: "sent" },
+                { id: "m7", text: "Perfect! Let's sync at 4pm to finalize.", timestamp: "Yesterday, 3:48 PM", direction: "received" },
+            ]
+        },
+        {
+            id: "c3",
+            name: "Emma Rodriguez",
+            avatarInitials: "ER",
+            lastMessage: "Thank you for the help 💙",
+            lastTimestamp: "12:05 PM",
+            online: true,
+            messages: [
+                { id: "m8", text: "Could you help me with the API integration?", timestamp: "11:20 AM", direction: "received" },
+                { id: "m9", text: "Sure! Which endpoint are you using?", timestamp: "11:32 AM", direction: "sent" },
+                { id: "m10", text: "The /messages route, but I'm getting 401", timestamp: "11:45 AM", direction: "received" },
+                { id: "m11", text: "Check your auth token, refresh it. Should work ✅", timestamp: "12:05 PM", direction: "sent" },
+                { id: "m12", text: "Thank you for the help 💙", timestamp: "12:10 PM", direction: "received" },
+            ]
+        },
+        {
+            id: "c4",
+            name: "Design Team",
+            avatarInitials: "DT",
+            lastMessage: "New assets uploaded",
+            lastTimestamp: "8:30 AM",
+            online: false,
+            messages: [
+                { id: "m13", text: "Hey folks, new UI kit available in Figma", timestamp: "8:30 AM", direction: "received" },
+                { id: "m14", text: "Amazing! I'll check it out now.", timestamp: "8:45 AM", direction: "sent" },
+            ]
+        }
+    ];
+
+    // helper: update last message preview in chat list
+    function updateChatLastMessage(chatId) {
+        const chat = chatsData.find(c => c.id === chatId);
+        if (chat && chat.messages.length) {
+            const lastMsgObj = chat.messages[chat.messages.length - 1];
+            let previewText = lastMsgObj.text.length > 40 ? lastMsgObj.text.substring(0, 37)+"..." : lastMsgObj.text;
+            chat.lastMessage = previewText;
+            // set timestamp to formatted time
+            const now = new Date();
+            let hours = now.getHours();
+            let minutes = now.getMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12;
+            const timeStr = `${hours}:${minutes.toString().padStart(2,'0')} ${ampm}`;
+            chat.lastTimestamp = timeStr;
+        }
+    }
+
+    let activeChatId = "c1";   // default active chat
+    let currentMobileView = false; // will detect on resize
+
+    // DOM elements
+    const chatListContainer = document.getElementById('chatListContainer');
+    const messagesArea = document.getElementById('messagesArea');
+    const chatHeaderName = document.getElementById('chatHeaderName');
+    const chatHeaderStatus = document.getElementById('chatHeaderStatus');
+    const chatHeaderAvatar = document.getElementById('chatHeaderAvatar');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendMsgBtn');
+    const backBtn = document.getElementById('backToChatsBtn');
+    const appDiv = document.getElementById('app');
+    const searchInput = document.getElementById('searchInput');
+
+    // render all chats in left panel
+    function renderChatList(filterText = "") {
+        const filterLower = filterText.toLowerCase();
+        const filtered = chatsData.filter(chat => chat.name.toLowerCase().includes(filterLower));
+        if (filtered.length === 0) {
+            chatListContainer.innerHTML = `<div style="padding: 40px; text-align: center; color: gray;">No chats found</div>`;
+            return;
+        }
+        let html = '';
+        filtered.forEach(chat => {
+            const isActive = (activeChatId === chat.id);
+            const activeClass = isActive ? 'active' : '';
+            html += `
+                <div class="chat-item ${activeClass}" data-chat-id="${chat.id}">
+                    <div class="avatar" style="background: linear-gradient(135deg, #1E88E5, #0f5b9e);">${chat.avatarInitials}</div>
+                    <div class="chat-info">
+                        <div class="chat-name">
+                            <span>${escapeHtml(chat.name)}</span>
+                            <span class="chat-time">${chat.lastTimestamp}</span>
+                        </div>
+                        <div class="last-msg">${escapeHtml(chat.lastMessage || 'Tap to chat')}</div>
+                    </div>
+                </div>
+            `;
+        });
+        chatListContainer.innerHTML = html;
+        // attach click listeners
+        document.querySelectorAll('.chat-item').forEach(el => {
+            el.addEventListener('click', (e) => {
+                const id = el.getAttribute('data-chat-id');
+                if (id) {
+                    setActiveChat(id);
+                    // Mobile behavior: open chat panel
+                    if (window.innerWidth <= 768) {
+                        appDiv.classList.add('mobile-chat-open');
+                    }
+                }
+            });
+        });
+    }
+
+    // render active conversation (messages)
+    function renderActiveChat() {
+        const chat = chatsData.find(c => c.id === activeChatId);
+        if (!chat) {
+            messagesArea.innerHTML = `<div class="empty-chat"><i class="fas fa-comments"></i><p>Select a conversation</p></div>`;
+            chatHeaderName.innerText = "WhatsApp";
+            chatHeaderStatus.innerText = "";
+            chatHeaderAvatar.innerText = "??";
+            return;
+        }
+        chatHeaderName.innerText = chat.name;
+        chatHeaderStatus.innerText = chat.online ? "🟢 Online" : "📴 Offline";
+        chatHeaderAvatar.innerText = chat.avatarInitials;
+        
+        if (!chat.messages.length) {
+            messagesArea.innerHTML = `<div class="empty-chat"><i class="far fa-smile"></i><p>No messages yet. Say hi!</p></div>`;
+            return;
+        }
+        
+        let messagesHtml = '';
+        chat.messages.forEach(msg => {
+            const directionClass = msg.direction === 'sent' ? 'sent' : 'received';
+            const checkIcon = (msg.direction === 'sent') ? '<i class="fas fa-check-double" style="font-size:0.6rem;"></i>' : '';
+            messagesHtml += `
+                <div class="message-row ${directionClass}">
+                    <div class="bubble">
+                        ${escapeHtml(msg.text)}
+                        <div class="msg-time">
+                            <span>${msg.timestamp}</span>
+                            ${checkIcon}
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        messagesArea.innerHTML = messagesHtml;
+        // scroll to bottom after render
+        setTimeout(() => {
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }, 20);
+    }
+
+    // set active chat & re-render both panels & update active highlight in list
+    function setActiveChat(chatId) {
+        activeChatId = chatId;
+        renderChatList(searchInput.value);
+        renderActiveChat();
+    }
+
+    // send new message
+    function sendNewMessage() {
+        const text = messageInput.value.trim();
+        if (!text) return;
+        const activeChat = chatsData.find(c => c.id === activeChatId);
+        if (!activeChat) return;
+        
+        const now = new Date();
+        let hours = now.getHours();
+        let minutes = now.getMinutes();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12;
+        const formattedTime = `${hours}:${minutes.toString().padStart(2,'0')} ${ampm}`;
+        
+        const newMsg = {
+            id: Date.now().toString(),
+            text: text,
+            timestamp: formattedTime,
+            direction: "sent"
+        };
+        activeChat.messages.push(newMsg);
+        // update last message preview
+        updateChatLastMessage(activeChatId);
+        // re-render chat list & current conversation
+        renderChatList(searchInput.value);
+        renderActiveChat();
+        messageInput.value = '';
+        // scroll messages down
+        setTimeout(() => {
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }, 30);
+        
+        // simulate reply after 1-2 seconds for demo (to make app alive)
+        if (activeChat.name !== "Design Team") {
+            setTimeout(() => {
+                // only if same chat still active and no double
+                const stillActive = chatsData.find(c => c.id === activeChatId);
+                if (stillActive && stillActive.id === activeChatId) {
+                    const replyTexts = ["Nice! 😎", "Sounds good!", "Thanks for the update", "I'll check it out", "👍"];
+                    const randomReply = replyTexts[Math.floor(Math.random() * replyTexts.length)];
+                    const replyMsg = {
+                        id: Date.now().toString() + "reply",
+                        text: randomReply,
+                        timestamp: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
+                        direction: "received"
+                    };
+                    stillActive.messages.push(replyMsg);
+                    updateChatLastMessage(activeChatId);
+                    renderChatList(searchInput.value);
+                    if (activeChatId === stillActive.id) renderActiveChat();
+                    setTimeout(() => {
+                        if (activeChatId === stillActive.id) messagesArea.scrollTop = messagesArea.scrollHeight;
+                    }, 20);
+                }
+            }, 1800);
+        }
+    }
+
+    // Helper escape HTML
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+            return c;
+        });
+    }
+
+    // responsive logic: reset mobile layout on resize
+    function handleResize() {
+        const isMobile = window.innerWidth <= 768;
+        if (!isMobile) {
+            // desktop: ensure both panels visible and no transform class
+            appDiv.classList.remove('mobile-chat-open');
+        } else {
+            // mobile: if currently we are on a chat, the class stays, but if no class, we are on chat list
+            // do not force-close the chat view when rotating, keep state.
+            // but if resize from desktop to mobile and we have active chat, we want to show chat list? Actually better keep consistency:
+            if (window.innerWidth <= 768 && !appDiv.classList.contains('mobile-chat-open')) {
+                // stay on chats list
+            }
+        }
+        // re-render chat list highlight just in case
+        renderChatList(searchInput.value);
+        if (activeChatId) renderActiveChat();
+    }
+
+    // search filter
+    function handleSearch() {
+        renderChatList(searchInput.value);
+    }
+
+    // Event binding & initialization
+    function init() {
+        renderChatList('');
+        setActiveChat("c1");
+        // make sure messages scroll
+        sendBtn.addEventListener('click', sendNewMessage);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendNewMessage();
+            }
+        });
+        backBtn.addEventListener('click', () => {
+            appDiv.classList.remove('mobile-chat-open');
+        });
+        window.addEventListener('resize', handleResize);
+        searchInput.addEventListener('input', handleSearch);
+        // initial mobile detection
+        handleResize();
+        // ensure safe area on mobile bottom
+        if ('virtualKeyboard' in navigator) {
+            // optional: modern API for keyboard avoidance
+        }
+        // fix for iOS bottom bar: we already used env(safe-area-inset-bottom)
+    }
+    
+    // additional: update active highlight on window load
+    window.addEventListener('load', () => {
+        init();
+        // also ensure input field never behind navigation bar (extra margin done by CSS)
+        // mark active chat list item
+    });
+</script>
+</body>
+</html>

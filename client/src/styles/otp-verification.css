@@ -1,0 +1,365 @@
+ @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap');
+
+ :root {
+     --text-dark: #0C0B0E;
+     --text-light: #6b6b6b;
+     --bg-light: #FFFFFF;
+     --bg-nav: #F5F5F7;
+     --primary-auth: #D0EA73;
+ }
+
+ .overlay-backdrop {
+     position: fixed;
+     inset: 0;
+     background: rgba(12, 11, 14, 0.55);
+     backdrop-filter: blur(6px);
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     z-index: 9999;
+     animation: fadeIn 0.25s ease;
+ }
+
+ @keyframes fadeIn {
+     from {
+         opacity: 0;
+     }
+
+     to {
+         opacity: 1;
+     }
+ }
+
+ @keyframes slideUp {
+     from {
+         opacity: 0;
+         transform: translateY(28px) scale(0.97);
+     }
+
+     to {
+         opacity: 1;
+         transform: translateY(0) scale(1);
+     }
+ }
+
+ @keyframes shake {
+
+     0%,
+     100% {
+         transform: translateX(0);
+     }
+
+     20% {
+         transform: translateX(-8px);
+     }
+
+     40% {
+         transform: translateX(8px);
+     }
+
+     60% {
+         transform: translateX(-5px);
+     }
+
+     80% {
+         transform: translateX(5px);
+     }
+ }
+
+ @keyframes popIn {
+     0% {
+         transform: scale(0.85);
+         opacity: 0;
+     }
+
+     70% {
+         transform: scale(1.07);
+     }
+
+     100% {
+         transform: scale(1);
+         opacity: 1;
+     }
+ }
+
+ @keyframes successPulse {
+     0% {
+         box-shadow: 0 0 0 0 rgba(208, 234, 115, 0.5);
+     }
+
+     70% {
+         box-shadow: 0 0 0 12px rgba(208, 234, 115, 0);
+     }
+
+     100% {
+         box-shadow: 0 0 0 0 rgba(208, 234, 115, 0);
+     }
+ }
+
+ .overlay-backdrop .overlay-card {
+     background: var(--bg-light);
+     border-radius: 24px;
+     padding: 48px 44px 40px;
+     width: 420px;
+     max-width: calc(100vw - 32px);
+     box-shadow: 0 32px 80px rgba(12, 11, 14, 0.18), 0 2px 8px rgba(12, 11, 14, 0.06);
+     animation: slideUp 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+     position: relative;
+     overflow: hidden;
+ }
+
+ .overlay-backdrop .overlay-card::before {
+     content: '';
+     position: absolute;
+     top: 0;
+     left: 0;
+     right: 0;
+     height: 4px;
+     background: var(--primary-auth);
+     border-radius: 24px 24px 0 0;
+ }
+
+ .overlay-backdrop .close-btn {
+     position: absolute;
+     top: 16px;
+     right: 16px;
+     width: 32px;
+     height: 32px;
+     border-radius: 50%;
+     border: none;
+     background: var(--bg-nav);
+     color: var(--text-light);
+     cursor: pointer;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     font-size: 16px;
+     transition: background 0.15s, color 0.15s;
+ }
+
+ .overlay-backdrop .close-btn:hover {
+     background: #e8e8eb;
+     color: var(--text-dark);
+ }
+
+ .overlay-backdrop .badge {
+     display: inline-flex;
+     align-items: center;
+     gap: 6px;
+     background: var(--primary-auth);
+     color: var(--text-dark);
+     font-family: 'DM Mono', monospace;
+     font-size: 11px;
+     font-weight: 500;
+     letter-spacing: 0.08em;
+     text-transform: uppercase;
+     padding: 4px 10px 4px 8px;
+     border-radius: 100px;
+     margin-bottom: 20px;
+ }
+
+ .overlay-backdrop .badge-dot {
+     width: 6px;
+     height: 6px;
+     border-radius: 50%;
+     background: var(--text-dark);
+     opacity: 0.5;
+ }
+
+ .overlay-backdrop .overlay-title {
+     font-family: 'Syne', sans-serif;
+     font-size: 26px;
+     font-weight: 800;
+     color: var(--text-dark);
+     margin: 0 0 6px;
+     letter-spacing: -0.02em;
+     line-height: 1.2;
+ }
+
+ .overlay-backdrop .overlay-subtitle {
+     font-family: 'Syne', sans-serif;
+     font-size: 14px;
+     color: var(--text-light);
+     margin: 0 0 32px;
+     line-height: 1.5;
+ }
+
+ .overlay-backdrop .overlay-subtitle strong {
+     color: var(--text-dark);
+     font-weight: 600;
+ }
+
+ .overlay-backdrop .otp-row {
+     display: flex;
+     gap: 10px;
+     justify-content: center;
+     margin-bottom: 28px;
+ }
+
+ .overlay-backdrop .otp-input {
+     width: 52px;
+     height: 60px;
+     border-radius: 14px;
+     border: 2px solid #E8E8EB;
+     background: var(--bg-nav);
+     text-align: center;
+     font-family: 'DM Mono', monospace;
+     font-size: 24px;
+     font-weight: 500;
+     color: var(--text-dark);
+     outline: none;
+     transition: border-color 0.18s, background 0.18s, transform 0.15s;
+     caret-color: transparent;
+ }
+
+ .overlay-card input {
+     width: 100%;
+     margin-bottom: 20px;
+     padding: 14px 18px;
+     border-radius: 14px;
+     border: 2px solid #E8E8EB;
+     background: var(--bg-nav);
+     font-family: 'DM Mono', monospace;
+     font-size: 16px;
+     color: var(--text-dark);
+     outline: none;
+     transition: border-color 0.18s, background 0.18s, transform 0.15s;
+ }
+
+ .overlay-backdrop .otp-input:focus {
+     border-color: var(--primary-auth);
+     background: #f9fde8;
+     transform: translateY(-2px);
+ }
+
+ .overlay-backdrop .otp-input.filled {
+     border-color: var(--text-dark);
+     background: var(--bg-nav);
+     animation: popIn 0.2s ease;
+ }
+
+ .overlay-backdrop .otp-input.error {
+     border-color: #FF4757;
+     background: #fff5f5;
+     animation: shake 0.4s ease;
+ }
+
+ .overlay-backdrop .otp-input.success {
+     border-color: var(--primary-auth);
+     background: #f9fde8;
+     animation: successPulse 0.5s ease;
+ }
+
+ .overlay-backdrop .divider {
+     width: 2px;
+     height: 2px;
+     border-radius: 50%;
+     background: #c8c8cc;
+     align-self: center;
+     flex-shrink: 0;
+ }
+
+ .overlay-backdrop .error-msg {
+     font-family: 'DM Mono', monospace;
+     font-size: 12px;
+     color: #FF4757;
+     text-align: center;
+     margin: -18px 0 18px;
+     min-height: 18px;
+     letter-spacing: 0.02em;
+ }
+
+ .overlay-backdrop .submit-btn {
+     width: 100%;
+     padding: 15px;
+     border-radius: 14px;
+     border: none;
+     background: var(--text-dark);
+     color: var(--bg-light);
+     font-family: 'Syne', sans-serif;
+     font-size: 15px;
+     font-weight: 700;
+     cursor: pointer;
+     letter-spacing: 0.01em;
+     transition: background 0.18s, transform 0.15s, opacity 0.15s;
+     position: relative;
+     overflow: hidden;
+ }
+
+ .overlay-backdrop .submit-btn:not(:disabled):hover {
+     background: #1a181f;
+     transform: translateY(-1px);
+ }
+
+ .overlay-backdrop .submit-btn:not(:disabled):active {
+     transform: translateY(0);
+ }
+
+ .overlay-backdrop .submit-btn:disabled {
+     opacity: 0.35;
+     cursor: not-allowed;
+ }
+
+ .overlay-backdrop .submit-btn.success-state {
+     background: var(--primary-auth);
+     color: var(--text-dark);
+ }
+
+ .overlay-backdrop .resend-row {
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     gap: 6px;
+     margin-top: 20px;
+     font-family: 'Syne', sans-serif;
+     font-size: 13px;
+     color: var(--text-light);
+ }
+
+ .overlay-backdrop .resend-btn {
+     background: none;
+     border: none;
+     font-family: 'Syne', sans-serif;
+     font-size: 13px;
+     font-weight: 700;
+     color: var(--text-dark);
+     cursor: pointer;
+     padding: 0;
+     text-decoration: underline;
+     text-underline-offset: 3px;
+     transition: color 0.15s;
+ }
+
+ .overlay-backdrop .resend-btn:hover {
+     color: #444;
+ }
+
+ .overlay-backdrop .resend-btn:disabled {
+     color: var(--text-light);
+     cursor: default;
+     text-decoration: none;
+ }
+
+ .overlay-backdrop .timer {
+     font-family: 'DM Mono', monospace;
+     font-size: 12px;
+     color: var(--text-light);
+ }
+
+ .overlay-backdrop .trigger-btn {
+     font-family: 'Syne', sans-serif;
+     font-size: 15px;
+     font-weight: 700;
+     background: var(--primary-auth);
+     color: var(--text-dark);
+     border: none;
+     padding: 14px 28px;
+     border-radius: 14px;
+     cursor: pointer;
+     transition: opacity 0.15s, transform 0.15s;
+ }
+
+ .overlay-backdrop .trigger-btn:hover {
+     opacity: 0.88;
+     transform: translateY(-1px);
+ }

@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>CollabChat</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --accent:#7c6ff7; --accent2:#a78bfa;
+    --pink:#ff6b9d; --teal:#3dd6c8; --orange:#ff9f43; --blue:#5b8dee;
+    --dark:#1a1a2e; --t1:#1a1a2e; --t2:#6b7280; --t3:#9ca3af;
+    --sidebar-w:320px; --font:'Plus Jakarta Sans',sans-serif;
+    --r-xl:22px; --r-lg:16px; --r-md:12px;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html,body{
+    width:100%;height:100%;
+    height:100dvh; /* dynamic viewport — adjusts when browser chrome shows/hides */
+    overflow:hidden;font-family:var(--font)
+  }
+
+  .shell{
+    width:100vw;
+    height:100vh;
+    height:100dvh; /* dvh shrinks when browser nav bar is visible */
+    display:flex;position:relative;overflow:hidden;
+    /* pad out the home bar / gesture-nav strip on iOS and Android */
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    padding-left:env(safe-area-inset-left,0px);
+    padding-right:env(safe-area-inset-right,0px);
+    background:
+      radial-gradient(ellipse at 15% 15%,rgba(167,139,250,.22) 0%,transparent 55%),
+      radial-gradient(ellipse at 85% 85%,rgba(255,107,157,.15) 0%,transparent 55%),
+      radial-gradient(ellipse at 70% 5%,rgba(61,214,200,.10) 0%,transparent 45%),
+      #ede9ff;
+  }
+
+  /* SIDEBAR */
+  .sidebar{
+    width:var(--sidebar-w);min-width:var(--sidebar-w);height:100%;
+    display:flex;flex-direction:column;
+    background:rgba(255,255,255,.93);backdrop-filter:blur(20px);
+    border-right:1.5px solid rgba(124,111,247,.10);
+    transition:transform .38s cubic-bezier(.77,0,.18,1);
+    z-index:20;position:relative;
+  }
+  .sidebar-header{
+    padding:24px 22px 18px;
+    background:linear-gradient(170deg,#f5f2ff 0%,rgba(255,255,255,0) 100%);
+    border-bottom:1px solid rgba(124,111,247,.07);
+  }
+  .brand-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+  .brand-left{display:flex;align-items:center;gap:11px}
+  .brand-logo{
+    width:42px;height:42px;border-radius:15px;
+    background:linear-gradient(135deg,#7c6ff7,#a78bfa);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 6px 18px rgba(124,111,247,.40);flex-shrink:0;
+  }
+  .brand-logo svg{width:20px;height:20px;fill:white}
+  .brand-title{font-size:17px;font-weight:800;color:var(--t1);letter-spacing:-.4px}
+  .brand-tagline{font-size:11px;color:var(--accent);font-weight:600}
+  .compose-btn{
+    width:36px;height:36px;border-radius:12px;
+    background:linear-gradient(135deg,#7c6ff7,#a78bfa);
+    border:none;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 4px 12px rgba(124,111,247,.35);
+    transition:transform .15s,box-shadow .15s;flex-shrink:0;
+  }
+  .compose-btn:hover{transform:scale(1.08);box-shadow:0 6px 18px rgba(124,111,247,.45)}
+  .compose-btn svg{width:16px;height:16px;fill:white}
+
+  .search-box{position:relative}
+  .search-box input{
+    width:100%;padding:10px 16px 10px 40px;
+    background:#f0edff;border:1.5px solid transparent;outline:none;
+    border-radius:var(--r-lg);font-family:var(--font);font-size:13px;color:var(--t1);
+    transition:border-color .2s,box-shadow .2s;
+  }
+  .search-box input::placeholder{color:var(--t3)}
+  .search-box input:focus{border-color:rgba(124,111,247,.3);box-shadow:0 0 0 3px rgba(124,111,247,.10);background:white}
+  .search-box .si{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--t3);pointer-events:none}
+
+  .chat-list{flex:1;overflow-y:auto;padding:10px 14px 10px;scrollbar-width:thin;scrollbar-color:#e0daff transparent}
+  .chat-list::-webkit-scrollbar{width:3px}
+  .chat-list::-webkit-scrollbar-thumb{background:#e0daff;border-radius:4px}
+
+  .list-label{font-size:10.5px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;padding:12px 10px 6px}
+
+  .chat-item{
+    display:flex;align-items:center;gap:12px;padding:10px 10px;
+    border-radius:var(--r-lg);cursor:pointer;transition:background .15s;
+    margin-bottom:1px;animation:fadeUp .3s ease both;
+  }
+  .chat-item:hover{background:rgba(124,111,247,.07)}
+  .chat-item.active{background:rgba(124,111,247,.12)}
+  .chat-item:nth-child(1){animation-delay:.04s}.chat-item:nth-child(2){animation-delay:.08s}
+  .chat-item:nth-child(3){animation-delay:.12s}.chat-item:nth-child(4){animation-delay:.16s}
+  .chat-item:nth-child(5){animation-delay:.20s}.chat-item:nth-child(6){animation-delay:.24s}
+  .chat-item:nth-child(7){animation-delay:.28s}
+
+  .av{position:relative;flex-shrink:0;width:46px;height:46px}
+  .av-inner{
+    width:100%;height:100%;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:15px;color:white;
+  }
+  .av-inner.pink  {background:linear-gradient(135deg,#ff6b9d,#ff9ec4)}
+  .av-inner.purple{background:linear-gradient(135deg,#7c6ff7,#a78bfa)}
+  .av-inner.teal  {background:linear-gradient(135deg,#3dd6c8,#72eadf)}
+  .av-inner.orange{background:linear-gradient(135deg,#ff9f43,#ffc17a)}
+  .av-inner.blue  {background:linear-gradient(135deg,#5b8dee,#92b4f5)}
+  .av-inner.navy  {background:linear-gradient(135deg,#2d3561,#556096)}
+  .av-inner.mint  {background:linear-gradient(135deg,#43e6b5,#80f0d0)}
+  .av-dot{position:absolute;bottom:1px;right:1px;width:12px;height:12px;border-radius:50%;background:#3dd6c8;border:2.5px solid white}
+  .av-dot.away{background:#fbbf24}
+
+  .ci-meta{flex:1;min-width:0}
+  .ci-name{font-size:13.5px;font-weight:700;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ci-preview{font-size:12px;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+  .ci-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
+  .ci-time{font-size:11px;color:var(--t3);font-weight:500}
+  .ci-badge{
+    min-width:20px;height:20px;border-radius:10px;padding:0 5px;
+    background:var(--accent);color:white;font-size:10.5px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .ci-badge.p{background:var(--pink)}.ci-badge.o{background:var(--orange)}.ci-badge.t{background:var(--teal);color:var(--dark)}
+
+  .sidebar-footer{
+    padding:14px 22px 20px;border-top:1px solid rgba(124,111,247,.07);
+    display:flex;align-items:center;gap:12px;
+  }
+  .my-av{
+    width:36px;height:36px;border-radius:50%;
+    background:linear-gradient(135deg,#7c6ff7,#a78bfa);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:13px;color:white;flex-shrink:0;
+  }
+  .my-name{font-size:13px;font-weight:700;color:var(--t1)}
+  .my-status{font-size:11px;color:var(--teal);font-weight:600}
+  .settings-btn{
+    margin-left:auto;width:32px;height:32px;border-radius:10px;
+    background:#f0edff;border:none;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--t2);font-size:15px;transition:background .15s,color .15s;
+  }
+  .settings-btn:hover{background:#e0daff;color:var(--accent)}
+
+  /* CHAT PANEL */
+  .chat-panel{
+    flex:1;display:flex;flex-direction:column;height:100%;min-width:0;
+    position:relative;overflow:hidden; /* prevents content spilling when keyboard resizes shell */
+  }
+  .chat-panel::before{
+    content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+    background:
+      radial-gradient(ellipse at 80% 10%,rgba(167,139,250,.14) 0%,transparent 50%),
+      radial-gradient(ellipse at 15% 90%,rgba(61,214,200,.10) 0%,transparent 45%);
+  }
+
+  .chat-header{
+    position:relative;z-index:5;
+    padding:16px 28px;display:flex;align-items:center;gap:14px;
+    background:rgba(255,255,255,.82);backdrop-filter:blur(20px);
+    border-bottom:1.5px solid rgba(124,111,247,.08);
+  }
+  .mob-menu-btn{
+    display:none;width:36px;height:36px;border-radius:12px;
+    background:#f0edff;border:none;cursor:pointer;
+    align-items:center;justify-content:center;
+    font-size:18px;color:var(--accent);flex-shrink:0;
+  }
+  .ch-av{position:relative;flex-shrink:0}
+  .ch-av-inner{
+    width:44px;height:44px;border-radius:50%;
+    background:linear-gradient(135deg,#ff6b9d,#ff9ec4);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:15px;color:white;
+    transition:background .3s;
+  }
+  .ch-dot{position:absolute;bottom:1px;right:1px;width:12px;height:12px;border-radius:50%;background:#3dd6c8;border:2.5px solid white}
+  .ch-info{flex:1;min-width:0}
+  .ch-name{font-size:16px;font-weight:800;color:var(--t1);letter-spacing:-.3px}
+  .ch-status{font-size:12px;color:var(--teal);font-weight:600;margin-top:1px}
+  .ch-actions{display:flex;gap:8px}
+  .ch-btn{
+    width:38px;height:38px;border-radius:12px;
+    background:white;border:none;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--t2);
+    box-shadow:0 2px 8px rgba(124,111,247,.10);
+    transition:background .15s,color .15s,box-shadow .15s;
+  }
+  .ch-btn:hover{background:#ede9ff;color:var(--accent);box-shadow:0 4px 14px rgba(124,111,247,.18)}
+
+  .messages-area{
+    flex:1;overflow-y:auto;padding:22px 28px;
+    display:flex;flex-direction:column;gap:14px;
+    position:relative;z-index:1;
+    scrollbar-width:thin;scrollbar-color:#e0daff transparent;
+  }
+  .messages-area::-webkit-scrollbar{width:4px}
+  .messages-area::-webkit-scrollbar-thumb{background:#e0daff;border-radius:4px}
+
+  .date-div{
+    display:flex;align-items:center;gap:12px;
+    font-size:11px;font-weight:700;color:var(--t3);
+    text-transform:uppercase;letter-spacing:.7px;margin:4px 0;
+  }
+  .date-div::before,.date-div::after{content:'';flex:1;height:1px;background:rgba(124,111,247,.15)}
+
+  .msg-row{display:flex;gap:10px;align-items:flex-end;animation:fadeUp .28s ease both}
+  .msg-row.out{flex-direction:row-reverse}
+  .msg-av{
+    width:32px;height:32px;border-radius:50%;flex-shrink:0;
+    font-size:11px;font-weight:800;color:white;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .msg-wrap{display:flex;flex-direction:column;max-width:68%}
+  .msg-sender{font-size:11px;font-weight:700;color:var(--accent);margin-bottom:4px;padding-left:14px}
+
+  .bubble{
+    padding:12px 16px;line-height:1.55;font-size:13.5px;color:var(--t1);
+    border-radius:20px 20px 20px 6px;
+    background:white;
+    box-shadow:0 2px 12px rgba(124,111,247,.12);position:relative;
+  }
+  .msg-row.out .bubble{
+    border-radius:20px 20px 6px 20px;
+    background:linear-gradient(135deg,#7c6ff7,#a78bfa);
+    color:white;box-shadow:0 6px 22px rgba(124,111,247,.38);
+  }
+  .bubble.bpink  {background:linear-gradient(135deg,#ff6b9d,#ff90b8);color:white;border-radius:18px}
+  .bubble.bteal  {background:linear-gradient(135deg,#3dd6c8,#66e8de);color:#1a1a2e;border-radius:18px}
+  .bubble.bpurple{background:linear-gradient(135deg,#a78bfa,#c4b5fd);color:white;border-radius:18px}
+  .bubble.borange{background:linear-gradient(135deg,#ff9f43,#ffc07a);color:white;border-radius:18px}
+
+  .new-pill{
+    display:inline-flex;align-items:center;
+    background:rgba(26,26,46,.75);color:white;
+    font-size:9.5px;font-weight:800;letter-spacing:.5px;
+    padding:2px 8px;border-radius:20px;
+    float:right;margin-left:10px;margin-top:2px;
+  }
+  .file-card{
+    display:flex;align-items:center;gap:10px;
+    margin-top:9px;padding:9px 12px;border-radius:13px;
+    background:rgba(255,255,255,.28);border:1px solid rgba(255,255,255,.4);
+    cursor:pointer;transition:background .15s;
+  }
+  .file-card:hover{background:rgba(255,255,255,.42)}
+  .file-emoji{font-size:22px}
+  .file-info .fn{font-size:12px;font-weight:700}
+  .file-info .fs{font-size:11px;opacity:.72;margin-top:1px}
+
+  .reactions{display:flex;gap:4px;margin-top:6px;padding-left:4px}
+  .rxn{
+    padding:3px 8px;border-radius:20px;background:white;font-size:12px;
+    box-shadow:0 1px 6px rgba(0,0,0,.08);cursor:pointer;
+    transition:transform .12s;border:1.5px solid rgba(124,111,247,.12);
+    display:flex;align-items:center;gap:4px;
+  }
+  .rxn:hover{transform:scale(1.1)}
+  .rxn span{font-size:10px;color:var(--t2);font-weight:600}
+
+  .msg-time{font-size:10.5px;color:var(--t3);margin-top:4px;padding:0 4px}
+  .msg-row:not(.out) .msg-time{text-align:left}
+  .msg-row.out .msg-time{text-align:right}
+
+  .typing-wrap{display:flex;gap:4px;align-items:center;padding:10px 14px}
+  .typing-wrap span{
+    width:7px;height:7px;border-radius:50%;background:var(--accent2);
+    animation:tbounce 1.2s infinite ease-in-out;
+  }
+  .typing-wrap span:nth-child(2){animation-delay:.18s}
+  .typing-wrap span:nth-child(3){animation-delay:.36s}
+  @keyframes tbounce{
+    0%,80%,100%{transform:scale(.65);opacity:.5}
+    40%{transform:scale(1.1);opacity:1}
+  }
+
+  .input-zone{
+    position:relative;z-index:5;
+    /* bottom padding grows by the safe-area so the bar sits above the
+       home indicator / gesture-nav strip on iOS and Android */
+    padding:14px 28px calc(20px + env(safe-area-inset-bottom,0px));
+    background:rgba(255,255,255,.82);backdrop-filter:blur(20px);
+    border-top:1.5px solid rgba(124,111,247,.08);
+    flex-shrink:0; /* never let the input area compress */
+  }
+  .input-row{
+    display:flex;align-items:center;gap:8px;
+    background:white;border-radius:26px;padding:6px 6px 6px 18px;
+    box-shadow:0 4px 20px rgba(124,111,247,.12);
+    border:1.5px solid rgba(124,111,247,.10);
+    transition:border-color .2s,box-shadow .2s;
+  }
+  .input-row:focus-within{border-color:rgba(124,111,247,.35);box-shadow:0 6px 28px rgba(124,111,247,.20)}
+  .inp-emoji{font-size:18px;cursor:pointer;flex-shrink:0;line-height:1}
+  .msg-field{
+    flex:1;border:none;outline:none;background:transparent;
+    font-family:var(--font);font-size:13.5px;color:var(--t1);padding:6px 0;
+  }
+  .msg-field::placeholder{color:var(--t3)}
+  .inp-actions{display:flex;gap:4px;align-items:center;flex-shrink:0}
+  .ia-btn{
+    width:34px;height:34px;border-radius:10px;border:none;background:transparent;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;
+    color:var(--t2);font-size:15px;transition:background .15s,color .15s;
+  }
+  .ia-btn:hover{background:#f0edff;color:var(--accent)}
+  .send-btn{
+    width:40px;height:40px;border-radius:15px;
+    background:linear-gradient(135deg,#7c6ff7,#a78bfa);
+    border:none;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 4px 16px rgba(124,111,247,.45);
+    transition:transform .15s,box-shadow .15s;flex-shrink:0;
+  }
+  .send-btn:hover{transform:scale(1.07);box-shadow:0 8px 24px rgba(124,111,247,.55)}
+  .send-btn svg{width:16px;height:16px;fill:white}
+
+  .mob-overlay{display:none;position:absolute;inset:0;background:rgba(26,26,46,.4);z-index:15}
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+  @media(max-width:680px){
+    .sidebar{
+      position:fixed;top:0;left:0;
+      height:100vh;height:100dvh; /* fill exactly the visible screen */
+      transform:translateX(-100%);
+      box-shadow:8px 0 40px rgba(26,26,46,.18);
+      z-index:30;
+    }
+    .sidebar.open{transform:translateX(0)}
+    .mob-overlay{position:fixed} /* overlay must be fixed too on mobile */
+    .mob-overlay.show{display:block}
+    .mob-menu-btn{display:flex}
+    .chat-header{padding:14px 18px}
+    .messages-area{padding:16px 16px}
+    /* on mobile: smaller side padding + safe-area bottom so the input bar
+       is never hidden under the home bar or gesture navigation strip */
+    .input-zone{
+      padding:10px 16px calc(14px + env(safe-area-inset-bottom,0px));
+    }
+    .ch-actions .ch-btn:nth-child(n+3){display:none}
+  }
+</style>
+</head>
+<body>
+<div class="shell" id="shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="brand-row">
+        <div class="brand-left">
+          <div class="brand-logo">
+            <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+          </div>
+          <div>
+            <div class="brand-title">CollabChat</div>
+            <div class="brand-tagline">UI/UX University</div>
+          </div>
+        </div>
+        <button class="compose-btn" title="New Message">
+          <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+        </button>
+      </div>
+      <div class="search-box">
+        <span class="si">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        </span>
+        <input type="text" placeholder="Search chats, files, people…"/>
+      </div>
+    </div>
+
+    <div class="chat-list" id="chatList">
+      <div class="list-label">Unread</div>
+
+      <div class="chat-item active" onclick="selectChat(this,'ruben')">
+        <div class="av"><div class="av-inner pink">RH</div><div class="av-dot"></div></div>
+        <div class="ci-meta">
+          <div class="ci-name">Ruben Herwitz</div>
+          <div class="ci-preview">📎 Design Brief.pdf</div>
+        </div>
+        <div class="ci-right"><div class="ci-time">1h ago</div><div class="ci-badge">1</div></div>
+      </div>
+
+      <div class="chat-item" onclick="selectChat(this,'paityn')">
+        <div class="av"><div class="av-inner orange">PS</div></div>
+        <div class="ci-meta">
+          <div class="ci-name">Paityn Schleifer</div>
+          <div class="ci-preview">Attaching great inspiration 👀</div>
+        </div>
+        <div class="ci-right"><div class="ci-time">5h ago</div><div class="ci-badge o">2</div></div>
+      </div>
+
+      <div class="chat-item" onclick="selectChat(this,'gotong')">
+        <div class="av"><div class="av-inner teal">GR</div><div class="av-dot away"></div></div>
+        <div class="ci-meta">
+          <div class="ci-name">Gotong Royong</div>
+          <div class="ci-preview">@you mentioned in #ui-workshop</div>
+        </div>
+        <div class="ci-right"><div class="ci-time">2h ago</div><div class="ci-badge p">2</div></div>
+      </div>
+
+      <div class="list-label">Direct Messages</div>
+
+      <div class="chat-item" onclick="selectChat(this,'mariana')">
+        <div class="av"><div class="av-inner mint">MA</div><div class="av-dot"></div></div>
+        <div class="ci-meta">
+          <div class="ci-name">Mariana Arcand</div>
+          <div class="ci-preview">Can you review the prototype?</div>
+        </div>
+        <div class="ci-right"><div class="ci-time">3h ago</div></div>
+      </div>
+
+      <div class="chat-item" onclick="selectChat(this,'kianna')">
+        <div class="av"><div class="av-inner blue">KB</div></div>
+        <div class="ci-meta">
+          <div class="ci-name">Kianna Baptista</div>
+          <div class="ci-preview">Let's sync before the standup!</div>
+        </div>
+        <div class="ci-right"><div class="ci-time">Yesterday</div></div>
+      </div>
+
+      <div class="chat-item" onclick="selectChat(this,'dev')">
+        <div class="av"><div class="av-inner navy">DT</div></div>
+        <div class="ci-meta">
+          <div class="ci-name">Dev Team</div>
+          <div class="ci-preview">Sprint review is on Friday 🚀</div>
+        </div>
+        <div class="ci-right"><div class="ci-time">Mon</div></div>
+      </div>
+
+      <div class="chat-item" onclick="selectChat(this,'elena')">
+        <div class="av"><div class="av-inner purple">EL</div><div class="av-dot"></div></div>
+        <div class="ci-meta">
+          <div class="ci-name">Elena Lorca</div>
+          <div class="ci-preview">Loved the new color palette ✨</div>
+        </div>
+        <div class="ci-right"><div class="ci-time">Mon</div></div>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="my-av">ME</div>
+      <div><div class="my-name">You</div><div class="my-status">● Active</div></div>
+      <button class="settings-btn">⚙</button>
+    </div>
+  </aside>
+
+  <!-- CHAT PANEL -->
+  <main class="chat-panel">
+    <div class="chat-header">
+      <button class="mob-menu-btn" id="menuBtn">☰</button>
+      <div class="ch-av">
+        <div class="ch-av-inner" id="chAvInner">RH</div>
+        <div class="ch-dot" id="chDot"></div>
+      </div>
+      <div class="ch-info">
+        <div class="ch-name" id="chName">Ruben Herwitz</div>
+        <div class="ch-status" id="chStatus">● Active now</div>
+      </div>
+      <div class="ch-actions">
+        <button class="ch-btn" title="Voice call">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 014.07 12a19.79 19.79 0 01-3.07-8.67A2 2 0 013 1.18h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L7.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+        </button>
+        <button class="ch-btn" title="Video call">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        </button>
+        <button class="ch-btn" title="Search">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        </button>
+        <button class="ch-btn" style="font-size:18px;color:var(--t2)" title="More">⋯</button>
+      </div>
+    </div>
+
+    <div class="messages-area" id="msgArea">
+      <div class="date-div">Today · UI Workshop</div>
+
+      <div class="msg-row">
+        <div class="msg-av" style="background:linear-gradient(135deg,#ff6b9d,#ff9ec4)">RH</div>
+        <div class="msg-wrap">
+          <div class="msg-sender">Ruben Herwitz</div>
+          <div class="bubble bpink">
+            <span class="new-pill">NEW</span>
+            I just wanted to follow up regarding the UI/UX design position I applied for last week.
+            <div class="file-card">
+              <div class="file-emoji">📄</div>
+              <div class="file-info"><div class="fn">Design Brief.pdf</div><div class="fs">200 KB · PDF Document</div></div>
+            </div>
+          </div>
+          <div class="reactions"><div class="rxn">👍 <span>3</span></div><div class="rxn">🔥 <span>1</span></div></div>
+          <div class="msg-time">15:00</div>
+        </div>
+      </div>
+
+      <div class="msg-row">
+        <div class="msg-av" style="background:linear-gradient(135deg,#ff6b9d,#ff9ec4)">RH</div>
+        <div class="msg-wrap">
+          <div class="msg-sender">Ruben Herwitz</div>
+          <div class="bubble bteal"><span class="new-pill">NEW</span>Exploring how design shapes the way we experience the world.</div>
+          <div class="msg-time">15:02</div>
+        </div>
+      </div>
+
+      <div class="msg-row out">
+        <div class="msg-av" style="background:linear-gradient(135deg,#7c6ff7,#a78bfa)">ME</div>
+        <div class="msg-wrap">
+          <div class="bubble">That's a great perspective! I'd love to see more of your portfolio work 🎨</div>
+          <div class="msg-time">15:05</div>
+        </div>
+      </div>
+
+      <div class="msg-row">
+        <div class="msg-av" style="background:linear-gradient(135deg,#ff6b9d,#ff9ec4)">RH</div>
+        <div class="msg-wrap">
+          <div class="msg-sender">Ruben Herwitz</div>
+          <div class="bubble bpurple"><span class="new-pill">NEW</span>Redefining experiences through creativity and technology. ✨</div>
+          <div class="msg-time">15:08</div>
+        </div>
+      </div>
+
+      <div class="msg-row out">
+        <div class="msg-av" style="background:linear-gradient(135deg,#7c6ff7,#a78bfa)">ME</div>
+        <div class="msg-wrap">
+          <div class="bubble">When can we schedule a call to discuss further?</div>
+          <div class="msg-time">15:12</div>
+        </div>
+      </div>
+
+      <div class="msg-row">
+        <div class="msg-av" style="background:linear-gradient(135deg,#ff6b9d,#ff9ec4)">RH</div>
+        <div class="msg-wrap">
+          <div class="msg-sender">Ruben Herwitz</div>
+          <div class="bubble">How about tomorrow at 3 PM? I'll send a calendar invite right away 📅</div>
+          <div class="reactions"><div class="rxn">✅ <span>2</span></div></div>
+          <div class="msg-time">15:15</div>
+        </div>
+      </div>
+
+      <div class="msg-row out">
+        <div class="msg-av" style="background:linear-gradient(135deg,#7c6ff7,#a78bfa)">ME</div>
+        <div class="msg-wrap">
+          <div class="bubble">Perfect! Talk then 🙌</div>
+          <div class="msg-time">15:17</div>
+        </div>
+      </div>
+
+      <div class="msg-row" id="typingRow">
+        <div class="msg-av" id="typingAv" style="background:linear-gradient(135deg,#ff6b9d,#ff9ec4)">RH</div>
+        <div class="msg-wrap">
+          <div class="bubble" style="padding:8px 14px">
+            <div class="typing-wrap"><span></span><span></span><span></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="input-zone">
+      <div class="input-row">
+        <span class="inp-emoji">😊</span>
+        <input class="msg-field" id="msgField" placeholder="Message Ruben Herwitz…" onkeydown="handleKey(event)" autocomplete="off"/>
+        <div class="inp-actions">
+          <button class="ia-btn" title="Attach">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+          </button>
+          <button class="ia-btn" title="Image">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </button>
+          <button class="send-btn" onclick="sendMessage()">
+            <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="mob-overlay" id="overlay" onclick="closeSidebar()"></div>
+</div>
+
+<script>
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('overlay');
+  document.getElementById('menuBtn').addEventListener('click',()=>{
+    sidebar.classList.add('open'); overlay.classList.add('show');
+  });
+  function closeSidebar(){sidebar.classList.remove('open');overlay.classList.remove('show')}
+
+  const chatData={
+    ruben:  {name:'Ruben Herwitz',   status:'● Active now', bg:'linear-gradient(135deg,#ff6b9d,#ff9ec4)', init:'RH', online:true},
+    paityn: {name:'Paityn Schleifer',status:'● Active now', bg:'linear-gradient(135deg,#ff9f43,#ffc17a)', init:'PS', online:true},
+    gotong: {name:'Gotong Royong',   status:'● Away',       bg:'linear-gradient(135deg,#3dd6c8,#72eadf)', init:'GR', online:false},
+    mariana:{name:'Mariana Arcand',  status:'● Active now', bg:'linear-gradient(135deg,#43e6b5,#80f0d0)', init:'MA', online:true},
+    kianna: {name:'Kianna Baptista', status:'● 2h ago',     bg:'linear-gradient(135deg,#5b8dee,#92b4f5)', init:'KB', online:false},
+    dev:    {name:'Dev Team',        status:'● 3 members',  bg:'linear-gradient(135deg,#2d3561,#556096)', init:'DT', online:false},
+    elena:  {name:'Elena Lorca',     status:'● Active now', bg:'linear-gradient(135deg,#7c6ff7,#a78bfa)', init:'EL', online:true},
+  };
+
+  function selectChat(el,id){
+    const c=chatData[id]; if(!c) return;
+    document.querySelectorAll('.chat-item').forEach(i=>i.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('chName').textContent=c.name;
+    document.getElementById('chStatus').textContent=c.status;
+    const av=document.getElementById('chAvInner');
+    av.textContent=c.init; av.style.background=c.bg;
+    document.getElementById('chDot').style.display=c.online?'':'none';
+    document.getElementById('msgField').placeholder='Message '+c.name+'…';
+    const ta=document.getElementById('typingAv');
+    if(ta){ta.textContent=c.init;ta.style.background=c.bg}
+    if(window.innerWidth<=680) closeSidebar();
+  }
+
+  function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+  function sendMessage(){
+    const f=document.getElementById('msgField');
+    const t=f.value.trim(); if(!t) return;
+    const area=document.getElementById('msgArea');
+    const tr=document.getElementById('typingRow');
+    if(tr) tr.remove();
+    const row=document.createElement('div');
+    row.className='msg-row out';
+    row.innerHTML=`
+      <div class="msg-av" style="background:linear-gradient(135deg,#7c6ff7,#a78bfa)">ME</div>
+      <div class="msg-wrap">
+        <div class="bubble">${esc(t)}</div>
+        <div class="msg-time">Now</div>
+      </div>`;
+    area.appendChild(row);
+    const ty=document.createElement('div');
+    ty.id='typingRow';ty.className='msg-row';
+    const curName=document.getElementById('chAvInner');
+    ty.innerHTML=`
+      <div class="msg-av" id="typingAv" style="background:${curName.style.background}">${curName.textContent}</div>
+      <div class="msg-wrap">
+        <div class="bubble" style="padding:8px 14px">
+          <div class="typing-wrap"><span></span><span></span><span></span></div>
+        </div>
+      </div>`;
+    area.appendChild(ty);
+    f.value=''; area.scrollTop=area.scrollHeight;
+  }
+
+  function handleKey(e){if(e.key==='Enter') sendMessage()}
+
+  window.addEventListener('load',()=>{
+    const a=document.getElementById('msgArea');
+    a.scrollTop=a.scrollHeight;
+  });
+
+  /* ── Visual Viewport API fix ──────────────────────────────────────────
+     Android Chrome doesn't shrink dvh when the virtual keyboard opens,
+     so the input bar gets pushed behind it. This detects the keyboard
+     height and resizes the shell to the actual visible area instead.
+  ──────────────────────────────────────────────────────────────────── */
+  if(window.visualViewport){
+    const shell=document.getElementById('shell');
+    const msgArea=document.getElementById('msgArea');
+
+    function onVVResize(){
+      const vv=window.visualViewport;
+      const kbHeight=window.innerHeight - vv.height - vv.offsetTop;
+      if(kbHeight > 50){
+        // Keyboard open: shrink shell to the visible viewport height
+        shell.style.height=vv.height+'px';
+      } else {
+        // Keyboard closed: let dvh handle it again
+        shell.style.height='';
+      }
+      // Keep latest message in view when keyboard pops up
+      msgArea.scrollTop=msgArea.scrollHeight;
+    }
+
+    window.visualViewport.addEventListener('resize', onVVResize);
+    window.visualViewport.addEventListener('scroll', onVVResize);
+  }
+  
+</script>
+</body>
+</html>

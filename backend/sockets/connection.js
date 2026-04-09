@@ -1,0 +1,38 @@
+const socketMessageHandler = require('./message');
+const OnlineUser = require('../services/onlineUsers.service')();
+const { handleLastSeen, handleConnectContactRoom, handleGetLastSeen } = require('./handlers/connection.handler');
+
+const socketHandler = (io) => {
+
+    io.on('connection', (socket) => {
+
+        // console.log("User connected:", socket.id)
+        // Add into the online status
+        OnlineUser.add(socket.user.userId, socket.id);
+
+        // Connect with the contacts Room Id, personal Room
+        handleConnectContactRoom({ userId: socket.user.userId, socket });
+
+        // Get online status of the contact
+        socket.on("online-status", ({ contactId }) => {
+            if (OnlineUser.has(contactId)) {
+                socket.emit({ status: 'online' })
+            } else {
+                socket.emit({ status: 'offline', lastSeen: handleGetLastSeen({ contactId }) });
+            }
+        })
+
+        socketMessageHandler(io, socket);
+
+        socket.on('disconnect', () => {
+
+            // Update the last seen of the user
+            handleLastSeen({ userId: socket.user.userId })
+            OnlineUser.remove(socket.user.userId, socket.id)
+        });
+
+    });
+
+}
+
+module.exports = socketHandler;

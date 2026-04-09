@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chat UI</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background: #111b21;
+      height: 100vh;
+      display: flex;
+    }
+
+    .app {
+      display: flex;
+      width: 100%;
+      height: 100vh;
+    }
+
+    /* LEFT PANEL */
+    .sidebar {
+      width: 30%;
+      background: #202c33;
+      border-right: 1px solid #2a3942;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .search-bar {
+      padding: 10px;
+      background: #202c33;
+    }
+
+    .search-bar input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      background: #2a3942;
+      color: #fff;
+    }
+
+    .user-list {
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .user {
+      display: flex;
+      align-items: center;
+      padding: 12px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .user:hover {
+      background: #2a3942;
+    }
+
+    .user img {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      margin-right: 12px;
+    }
+
+    .user .info {
+      color: #e9edef;
+    }
+
+    .user .info .name {
+      font-weight: 500;
+    }
+
+    .user .info .last-msg {
+      font-size: 13px;
+      color: #8696a0;
+    }
+
+    /* RIGHT PANEL */
+    .chat {
+      width: 70%;
+      display: flex;
+      flex-direction: column;
+      background: #0b141a;
+    }
+
+    .chat-header {
+      padding: 15px;
+      background: #202c33;
+      border-bottom: 1px solid #2a3942;
+      color: #fff;
+    }
+
+    .messages {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .message {
+      max-width: 60%;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .sent {
+      background: #005c4b;
+      color: #fff;
+      align-self: flex-end;
+    }
+
+    .received {
+      background: #202c33;
+      color: #e9edef;
+      align-self: flex-start;
+    }
+
+    .input-area {
+      display: flex;
+      padding: 10px;
+      background: #202c33;
+    }
+
+    .input-area input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      background: #2a3942;
+      color: #fff;
+    }
+
+    .input-area button {
+      margin-left: 10px;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 8px;
+      background: #00a884;
+      color: white;
+      cursor: pointer;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 100%;
+      }
+
+      .chat {
+        display: none;
+      }
+
+      .chat.active {
+        display: flex;
+        width: 100%;
+      }
+    }
+  </style>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+</head>
+
+<body>
+  <div class="app">
+
+    <!-- LEFT SIDE -->
+    <div class="sidebar">
+      <div class="search-bar">
+        <input type="text" placeholder="Search users...">
+      </div>
+
+      <div class="user-list" id="userList">
+
+        <% contacts.forEach(contact=> { %>
+          <div class="user" data-name="<%= contact.name %>" data-userid="<%= contact.userId %>">
+            <img src="https://i.pravatar.cc/150?img=1" />
+            <div class="info">
+              <div class="name">
+                <%= contact.name %>
+              </div>
+              <div class="last-msg">Tap to chat</div>
+            </div>
+          </div>
+          <% }) %>
+
+
+      </div>
+    </div>
+
+    <!-- RIGHT SIDE -->
+    <div class="chat" id="chatBox">
+      <div class="chat-header" id="chatHeader">Select a user</div>
+
+      <div class="messages" id="messages"></div>
+
+      <div class="input-area">
+        <input type="text" id="messageInput" placeholder="Type a message...">
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+
+  </div>
+
+
+  //
+  <script>
+
+    let activeUser = null;
+    let receiverUserId = null;
+
+    const userList = document.getElementById("userList");
+    const chatHeader = document.getElementById("chatHeader");
+    const messages = document.getElementById("messages");
+    const chatBox = document.getElementById("chatBox");
+    const input = document.getElementById("messageInput");
+
+
+    document.querySelectorAll('.user').forEach(u => u.onclick = () => {
+      const contact = { 
+        name: u.dataset.name,
+        userId: u.dataset.userid
+      }
+      openChat(contact);
+    });
+
+    function openChat(contact) {
+      activeUser = contact;
+      receiverUserId = contact.userId;
+      chatHeader.innerText = contact.name;
+      messages.innerHTML = "";
+
+      if (window.innerWidth < 768) {
+        chatBox.classList.add("active");
+      }
+    }
+
+  </script>
+  <script src="/public/socket/connection.js"></script>
+  <!-- <script src="/public/script.js"></script> -->
+  <script src="/public/socket/message.js"></script>
+
+</body>
+
+</html>

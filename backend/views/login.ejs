@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <input type="text" id="email">
+    <input type="text" id="pass">
+    <button id="btn">Log in</button>
+
+    <script>
+
+        document.getElementById("btn").addEventListener('click', (e) => {
+            e.preventDefault();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("pass").value.trim();
+            handleLogin(email, password)
+        });
+
+        async function handleLogin(email, password) {
+            try {
+                const res = await fetch("/login", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type" : "application/json"
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    return location.href = data.redirectedTo
+                }
+                return alert(data.message);
+
+            } catch (err) {
+                alert("Some error occured:", err)
+                console.log("Error:", err)
+            }
+        }
+
+    </script>
+</body>
+</html>

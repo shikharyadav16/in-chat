@@ -1,0 +1,225 @@
+:root {
+    --text-dark: #0C0B0E;
+    --text-grey: #6b6b6b;
+    --text-light: #fafafa;
+    --bg-light: #FFFFFF;
+    --bg-nav: #f5f7f6;
+    --primary: #D0EA73;
+}
+
+/* RESET */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* BODY */
+body {
+    font-family: 'Inter', sans-serif;
+    background: #fafafa;
+}
+
+/* CONTAINER */
+.container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* LEFT IMAGE */
+.img-section {
+    flex: 1;
+    background: url("https://cdn-imgix.headout.com/tour/19364/TOUR-IMAGE/a0f87f7e-434d-4c3c-9584-f7ee351d5f64-10432-dubai-img-worlds-of-adventure---uae-resident-offer-01.jpg") center/cover no-repeat;
+}
+
+/* RIGHT FORM */
+.form-section {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+}
+
+.form-wrapper {
+    width: 100%;
+    max-width: 380px;
+}
+
+/* HEADER */
+.header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+}
+
+.subtitle {
+    font-size: 0.9rem;
+    color: var(--text-grey);
+    margin-top: 5px;
+}
+
+/* NAV */
+.nav {
+    display: flex;
+    background: var(--bg-nav);
+    border-radius: 30px;
+    padding: 5px;
+    margin-bottom: 20px;
+}
+
+.nav a {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    border-radius: 30px;
+    text-decoration: none;
+    color: #0C0B0E;
+    font-weight: 500;
+    transition: 0.3s;
+}
+
+/* .nav a:hover {
+    background: #eee;
+} */
+
+.nav .active {
+    color: #FAFAFA;
+    background: var(--primary);
+}
+
+/* INPUT */
+.input-field {
+    margin-bottom: 15px;
+}
+
+.input-field label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-grey);
+}
+
+.input-field input {
+    width: 100%;
+    margin-top: 6px;
+    padding: 12px 16px;
+    border-radius: 25px;
+    border: 1px solid #ddd;
+    outline: none;
+    transition: 0.3s;
+}
+
+.input-field input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(208, 234, 115, 0.3);
+}
+
+/* REMEMBER */
+.remember {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    margin-bottom: 15px;
+}
+
+.remember label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.remember a {
+    text-decoration: none;
+    color: var(--text-grey);
+}
+
+/* BUTTON */
+button {
+    width: 100%;
+    padding: 12px;
+    border-radius: 25px;
+    border: none;
+    color: #FAFAFA;
+    background: var(--primary);
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+/* DIVIDER */
+.divider {
+    display: flex;
+    align-items: center;
+    margin: 20px 0;
+}
+
+.divider hr {
+    flex: 1;
+    border: none;
+    border-bottom: 1px solid #ddd;
+}
+
+.divider p {
+    margin: 0 10px;
+    font-size: 0.8rem;
+    color: var(--text-grey);
+}
+
+/* SOCIAL */
+.social {
+    display: flex;
+    gap: 10px;
+}
+
+.social a {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--bg-nav);
+    padding: 10px;
+    border-radius: 25px;
+    text-decoration: none;
+    color: rgba(0, 0, 0, 0.864);
+    font-weight: 400;
+    transition: 0.3s;
+}
+
+.social a:hover {
+    background: #eee;
+}
+
+.social img {
+    height: 18px;
+}
+
+/* FOOTER */
+.footer {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-grey);
+}
+
+.footer a {
+    text-decoration: none;
+    font-weight: 600;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+    .img-section {
+        display: none;
+    }
+}

@@ -111,7 +111,22 @@ const handleGetNewContact = asyncHandler(async (req, res) => {
         .select("userId username email")
         .limit(10);
 
-    return res.json({ success: true, users });
+    const user = await User.findOne({ userId: req.user.userId }).select("contacts");
+    const savedContacts = user?.contacts || [];
+    const savedContactIds = new Set(savedContacts.map(c => c.userId));
+
+    let contactList = {
+        contacts: users.filter(u => savedContactIds.has(u.userId)),
+        nonContacts: users.filter(u => !savedContactIds.has(u.userId))
+    }
+
+    contactList.contacts.forEach(c => {
+        c.name = savedContacts.find(sc => sc.userId === c.userId)?.name || c.username;
+    });
+
+    console.log("Search results for query:", query, contactList);
+
+    return res.json({ success: true, users: contactList });
 });
 
 

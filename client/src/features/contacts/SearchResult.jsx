@@ -15,7 +15,7 @@ function SearchResult({ searchList, hidden }) {
         ))}
 
         <div className="section-label">New Chat</div>
-        {searchList.unknown.map(contact => (
+        {searchList.nonContacts.map(contact => (
           <ContactItem
             key={contact.roomId}
             type={contact.type}
